@@ -1,15 +1,18 @@
 package com.avi.Mario.jade;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameObject {
     private String name;
     private List<Component> components;
-    public GameObject(String name) {
+    public Transform transform;
+
+
+    public GameObject(String name, Transform transform) {
         this.name = name;
         this.components = new ArrayList<>();
+        this.transform = transform;
     }
     public <T extends Component> T getComponent(Class<T> componentClass) {
         for(Component c: components) {

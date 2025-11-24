@@ -50,7 +50,7 @@ public class Shader {
                 fragmentSource = splitString[2];
             }
             else {
-                throw new IOException("Unexpected token '"+ firstPattern + "'");
+                throw new IOException("Unexpected token '"+ secondPattern + "'");
             }
 
         } catch(IOException e) {
@@ -117,8 +117,9 @@ public class Shader {
         glUseProgram(0);
         beingUsed = false;
     }
-    public void updateMat4f(String varName, Matrix4f mat4) {
+    public void uploadMat4f(String varName, Matrix4f mat4) {
         int varLocation = glGetUniformLocation(shaderProgramID,varName);
+        use();
         FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
         mat4.get(matBuffer);
         glUniformMatrix4fv(varLocation, false, matBuffer);
@@ -140,17 +141,18 @@ public class Shader {
         use();
         glUniform1i(varLocation,val);
     }
-    public void updateMat3f(String varName, Matrix3f mat3) {
+    public void uploadMat3f(String varName, Matrix3f mat3) {
         int varLocation = glGetUniformLocation(shaderProgramID,varName);
+        use();
         FloatBuffer matBuffer = BufferUtils.createFloatBuffer(9);
         mat3.get(matBuffer);
         glUniformMatrix3fv(varLocation, false, matBuffer);
     }
-    public void updateMat4f(String varName, Matrix2f mat2) {
+    public void uploadMat2f(String varName, Matrix2f mat2) {
         int varLocation = glGetUniformLocation(shaderProgramID,varName);
-        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
+        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(4);
         mat2.get(matBuffer);
-        glUniformMatrix4fv(varLocation, false, matBuffer);
+        glUniformMatrix2fv(varLocation, false, matBuffer);
     }
     public void uploadVec2f(String varName, Vector2f vec) {
         int varLocation = glGetUniformLocation(shaderProgramID, varName);

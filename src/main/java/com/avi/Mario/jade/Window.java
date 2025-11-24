@@ -53,6 +53,9 @@ public class Window {
         }
         return Window.window;
     }
+    public static Scene getScene() {
+        return get().currentScene;
+    }
     public void run(){
         System.out.println("Hello LWJGL" + Version.getVersion() + "!");
         init();
@@ -95,7 +98,6 @@ public class Window {
     }
     public void loop() {
         float beginTime = Time.getTime();
-        float endTime = Time.getTime();
         float dt = -1.0f;
         while(!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
@@ -110,7 +112,7 @@ public class Window {
 
             glfwSwapBuffers(glfwWindow);
 
-            endTime = Time.getTime();
+            float endTime = Time.getTime();
              dt= endTime-beginTime;
             beginTime = endTime;
         }
