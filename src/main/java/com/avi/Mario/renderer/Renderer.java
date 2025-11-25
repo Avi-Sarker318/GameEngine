@@ -37,11 +37,11 @@ public class Renderer {
             newBatch.addSprite(sprite);
         }
     }
-        public void render() {
-            for(RenderBatch batch: batches) {
-                batch.render();
-            }
+    public void render() {
+        for(RenderBatch batch: batches) {
+            batch.render();
         }
+    }
 
 
 }

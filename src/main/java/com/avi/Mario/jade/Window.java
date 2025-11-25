@@ -1,6 +1,5 @@
 package com.avi.Mario.jade;
 
-import com.avi.Mario.util.Time;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -25,9 +24,9 @@ public class Window {
         this.width = 1920;
         this.height = 1080;
         this.title = "Mario";
-        r=1;
-        g=1;
-        b=1;
+        r=0;
+        g=0;
+        b=0;
         a=1;
     }
 
@@ -97,7 +96,7 @@ public class Window {
         Window.changeScene(0);
     }
     public void loop() {
-        float beginTime = Time.getTime();
+        float beginTime = (float)glfwGetTime();
         float dt = -1.0f;
         while(!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
@@ -112,7 +111,7 @@ public class Window {
 
             glfwSwapBuffers(glfwWindow);
 
-            float endTime = Time.getTime();
+            float endTime = (float)glfwGetTime();
              dt= endTime-beginTime;
             beginTime = endTime;
         }

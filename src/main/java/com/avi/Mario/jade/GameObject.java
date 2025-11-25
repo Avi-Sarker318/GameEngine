@@ -8,6 +8,12 @@ public class GameObject {
     private List<Component> components;
     public Transform transform;
 
+    public GameObject(String name) {
+        this.name = name;
+        this.components = new ArrayList<>();
+        this.transform = new Transform();
+    }
+
 
     public GameObject(String name, Transform transform) {
         this.name = name;

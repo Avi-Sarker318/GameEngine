@@ -9,8 +9,8 @@ import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
-        private String filepath;
-        int texID;
+    private String filepath;
+    int texID;
     public Texture(String filepath) {
         this.filepath=filepath;
 
