@@ -3,6 +3,7 @@ package com.avi.Mario.renderer;
 import com.avi.Mario.jade.Window;
 import com.avi.Mario.util.AssetPool;
 import components.SpriteRenderer;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -14,7 +15,7 @@ import static org.lwjgl.opengl.ARBVertexArrayObject.glGenVertexArrays;
 
 import static org.lwjgl.opengl.GL20.*;
 
-public class RenderBatch {
+public class RenderBatch implements Comparable<RenderBatch>{
     //Vertex
     //********
     //Pos                    color
@@ -42,8 +43,10 @@ public class RenderBatch {
     private int vaoID, vboID;
     private int maxBatchSize;
     private Shader shader;
+    private int zIndex;
 
-    public RenderBatch(int maxBatchSize) {
+    public RenderBatch(int maxBatchSize, int zIndex) {
+        this.zIndex = zIndex;
         shader = AssetPool.getShader("assets/shaders/defaultShader.glsl");
         this.sprites = new SpriteRenderer[maxBatchSize];
         this.maxBatchSize = maxBatchSize;
@@ -107,9 +110,21 @@ public class RenderBatch {
     }
 
     void render() {
-        //for now we will rebuffer all data every frame
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+        boolean rebufferData = false;
+        for(int i=0; i< numSprites; i++) {
+            SpriteRenderer spr = sprites[i];
+            if(spr.isDirty()) {
+                loadVertexProperties(i);
+                spr.setClean();
+                rebufferData = true;
+            }
+        }
+        if(rebufferData) {
+            //for now we will rebuffer all data every frame
+            glBindBuffer(GL_ARRAY_BUFFER, vboID);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+
+        }
 
         //
         shader.use();
@@ -229,5 +244,14 @@ public class RenderBatch {
 
     public boolean hasTexture(Texture tex) {
         return this.textures.contains(tex);
+    }
+
+    public int zIndex() {
+        return this.zIndex;
+    }
+
+    @Override
+    public int compareTo(@NotNull RenderBatch o) {
+        return Integer.compare(this.zIndex, o.zIndex());
     }
 }

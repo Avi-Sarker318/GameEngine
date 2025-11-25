@@ -12,7 +12,11 @@ public class Texture {
     private String filepath;
     private int texID;
     private int width, height;
-    public Texture(String filepath) {
+    public Texture() {
+
+    }
+
+    public void init(String filepath) {
         this.filepath=filepath;
 
         texID = glGenTextures();
@@ -52,9 +56,6 @@ public class Texture {
         else {
             assert false : "Error: (Texture) Could not load image '" + filepath + "'";
         }
-
-
-
     }
 
     public void bind () {
