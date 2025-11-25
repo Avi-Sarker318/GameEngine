@@ -2,6 +2,7 @@ package com.avi.Mario.util;
 
 import com.avi.Mario.renderer.Shader;
 import com.avi.Mario.renderer.Texture;
+import components.Spritesheet;
 
 import java.io.File;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import java.util.Map;
 public class AssetPool {
     private static Map<String, Shader> shaders =new HashMap<>();
     private static Map<String, Texture> textures = new HashMap<>();
-
+    private static Map<String, Spritesheet> spritesheets = new HashMap<>();
     public static Shader getShader(String resourceName) {
         File file = new File(resourceName);
         if(AssetPool.shaders.containsKey(file.getAbsolutePath())) {
@@ -33,5 +34,20 @@ public class AssetPool {
             AssetPool.textures.put(file.getAbsolutePath(),texture);
             return texture;
         }
+    }
+
+    public static void addSpritesheet(String resourceName, Spritesheet spritesheet) {
+        File file = new File(resourceName);
+        if(!AssetPool.spritesheets.containsKey(file.getAbsolutePath())) {
+            AssetPool.spritesheets.put(file.getAbsolutePath(),spritesheet);
+        }
+    }
+
+    public static Spritesheet getSpriteSheet(String resourceName) {
+        File file = new File(resourceName);
+        if(!AssetPool.spritesheets.containsKey(file.getAbsolutePath())) {
+            assert false: "Error: tried to access spritesheet " + resourceName + " . it is not in asset pool";
+        }
+        return AssetPool.spritesheets.getOrDefault(file.getAbsolutePath(),null);
     }
 }
