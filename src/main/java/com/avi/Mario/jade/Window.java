@@ -2,6 +2,7 @@ package com.avi.Mario.jade;
 
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -35,17 +36,16 @@ public class Window {
         switch(newScene) {
             case 0:
                 currentScene = new LevelEditorScene();
-                currentScene.init();
-                currentScene.start();
                 break;
             case 1:
                 currentScene= new LevelScene();
-                currentScene.init();
-                currentScene.start();
             default:
                 assert false: "Unknown scene '" + newScene + "'";
                 break;
         }
+        currentScene.load();
+        currentScene.init();
+        currentScene.start();
     }
     public static Window get() {
         if(Window.window == null) {
@@ -108,6 +108,8 @@ public class Window {
     public void loop() {
         float beginTime = (float)glfwGetTime();
         float dt = -1.0f;
+
+
         while(!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
 
@@ -125,6 +127,7 @@ public class Window {
              dt= endTime-beginTime;
             beginTime = endTime;
         }
+        currentScene.saveExit();
     }
     public static int getWidth() {
         return get().width;
