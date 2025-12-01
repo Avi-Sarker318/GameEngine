@@ -1,7 +1,5 @@
 package components;
 
-import com.avi.Mario.jade.Component;
-
 public class FontRenderer extends Component {
     @Override
     public void start() {

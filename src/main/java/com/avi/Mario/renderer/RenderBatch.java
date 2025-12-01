@@ -172,7 +172,7 @@ public class RenderBatch implements Comparable<RenderBatch>{
             }
         }
 
-        //add vertoice with the appropriate properties
+        //add vertice with the appropriate properties
 
         float xAdd = 1.0f;
         float yAdd = 1.0f;

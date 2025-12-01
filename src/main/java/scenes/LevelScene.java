@@ -1,4 +1,6 @@
-package com.avi.Mario.jade;
+package scenes;
+
+import com.avi.Mario.jade.Window;
 
 public class LevelScene extends Scene {
     public LevelScene() {

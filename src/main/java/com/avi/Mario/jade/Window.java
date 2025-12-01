@@ -1,9 +1,13 @@
 package com.avi.Mario.jade;
 
+import com.avi.Mario.renderer.DebugDraw;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import scenes.LevelEditorScene;
+import scenes.LevelScene;
+import scenes.Scene;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -26,9 +30,9 @@ public class Window {
         this.width = 1920;
         this.height = 1080;
         this.title = "Mario";
-        r=0;
-        g=0;
-        b=0;
+        r=1;
+        g=1;
+        b=1;
         a=1;
     }
 
@@ -72,13 +76,17 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
         //create window
         glfwWindow = glfwCreateWindow(this.width, this.height,this.title, NULL,NULL);
         if(glfwWindow == NULL) {
             throw new IllegalStateException("Failed to create GLFW window");
         }
+        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        glfwSetWindowPos(glfwWindow,
+                (vidMode.width() - this.width) / 2,
+                (vidMode.height() - this.height) / 2);
 
         glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
         glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
@@ -113,11 +121,14 @@ public class Window {
         while(!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
 
+            DebugDraw.beginFrame();
+
 
             glClearColor(r, g,b,a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if(dt>=0) {
+                DebugDraw.draw();
                 currentScene.update(dt);
             }
             this.imGuiLayer.update(dt, currentScene);;

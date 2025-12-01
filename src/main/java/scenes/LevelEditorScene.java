@@ -1,27 +1,31 @@
-package com.avi.Mario.jade;
+package scenes;
 
+import com.avi.Mario.jade.Camera;
+import com.avi.Mario.jade.GameObject;
+import com.avi.Mario.jade.Prefabs;
+import com.avi.Mario.jade.Transform;
+import com.avi.Mario.renderer.DebugDraw;
 import com.avi.Mario.util.AssetPool;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import components.Rigidbody;
-import components.Sprite;
-import components.SpriteRenderer;
-import components.Spritesheet;
+import components.*;
 import imgui.ImGui;
 import imgui.ImVec2;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class LevelEditorScene extends Scene {
     private GameObject obj1;
     private Spritesheet sprites;
     SpriteRenderer obj1Sprite;
+    GameObject levelEditorStuff = new GameObject("levelEditor", new Transform(new Vector2f()),0);
 
     public LevelEditorScene() {
 
     }
     @Override
     public void init() {
+        levelEditorStuff.addComponent(new MouseControls());
+        levelEditorStuff.addComponent(new GridLines());
         loadResources();
         this.camera = new Camera(new Vector2f());
         sprites = AssetPool.getSpriteSheet("assets/images/decorationsAndBlocks.png");
@@ -32,7 +36,7 @@ public class LevelEditorScene extends Scene {
 
 
 
-        obj1 = new GameObject("Object 1",
+/*        obj1 = new GameObject("Object 1",
                 new Transform(new Vector2f(200,100), new Vector2f(256,256)),2);
         obj1Sprite = new SpriteRenderer();
         obj1Sprite.setColor(new Vector4f(1,0,0,1));
@@ -49,7 +53,9 @@ public class LevelEditorScene extends Scene {
         obj2Sprite.setTexture(AssetPool.getTexture("assets/images/blendImage2.png"));
         obj2SpriteRenderer.setSprite(obj2Sprite);
         obj2.addComponent(obj2SpriteRenderer);
-        this.addGameObjecttoScene(obj2);
+        this.addGameObjecttoScene(obj2);*/
+
+        DebugDraw.addLine2D(new Vector2f(0,0),new Vector2f(800,800), new Vector3f(1,0,0), 120);
 
     }
 
@@ -63,9 +69,12 @@ public class LevelEditorScene extends Scene {
         AssetPool.getTexture("assets/images/blendImage2.png");
 
     }
-
+    float t = 0.0f;
     @Override
     public void update(float dt) {
+        levelEditorStuff.update(dt);
+        DebugDraw.addBox2D(new Vector2f(400,200), new Vector2f(64,32), 30,new Vector3f(0,1,0),1);
+
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
@@ -91,8 +100,10 @@ public class LevelEditorScene extends Scene {
             Vector2f[] texCoords = sprite.getTexCoords();
 
             ImGui.pushID(i);
-            if(ImGui.imageButton(id, spriteWidth,spriteHeight, texCoords[0].x, texCoords[0].y, texCoords[2].x, texCoords[2].y)) {
-                System.out.println("Button " + i + " clicked");
+            if(ImGui.imageButton(id, spriteWidth,spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
+                GameObject object = Prefabs.generateSpriteObject(sprite, 32, 32);
+                // attach this to the mouse cursor
+                levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
             }
             ImGui.popID();
 

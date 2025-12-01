@@ -1,6 +1,5 @@
 package components;
 
-import com.avi.Mario.jade.Component;
 import com.avi.Mario.jade.Transform;
 import com.avi.Mario.renderer.Texture;
 import imgui.ImGui;

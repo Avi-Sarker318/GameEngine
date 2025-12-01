@@ -1,8 +1,13 @@
-package com.avi.Mario.jade;
+package scenes;
 
+import com.avi.Mario.jade.Camera;
+import com.avi.Mario.jade.GameObject;
+import com.avi.Mario.jade.GameObjectDeserializer;
 import com.avi.Mario.renderer.Renderer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import components.Component;
+import components.ComponentDeserializer;
 import imgui.ImGui;
 
 import java.io.FileWriter;
@@ -92,10 +97,24 @@ public abstract class Scene {
             e.printStackTrace();
         }
         if(!inFile.equals("")) {
+            int maxGold = -1;
+            int maxCompId= -1;
             GameObject[] objs = gson.fromJson(inFile, GameObject[].class);
             for(int i = 0;i< objs.length; i++) {
                 addGameObjecttoScene(objs[i]);
+                for(Component c : objs[i].getAllComponents()) {
+                    if(c.getUid() > maxCompId) {
+                        maxCompId = c.getUid();
+                    }
+                }
+                if(objs[i].getUid() > maxGold) {
+                    maxGold = objs[i].getUid();
+                }
             }
+            maxGold++;
+            maxCompId++;
+            GameObject.init(maxGold);
+            Component.init(maxCompId);
             this.levelLoaded = true;
         }
     }
