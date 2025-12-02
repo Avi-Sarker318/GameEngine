@@ -30,7 +30,9 @@ public class LevelEditorScene extends Scene {
         this.camera = new Camera(new Vector2f());
         sprites = AssetPool.getSpriteSheet("assets/images/decorationsAndBlocks.png");
         if(levelLoaded) {
-            this.activeGameObject = gameObjects.getFirst();
+            if(gameObjects.size() > 0) {
+                this.activeGameObject = gameObjects.getFirst();
+            }
             return;
         }
 
@@ -68,12 +70,18 @@ public class LevelEditorScene extends Scene {
                         16,16,81,0));
         AssetPool.getTexture("assets/images/blendImage2.png");
 
+        for(GameObject g: gameObjects) {
+            if(g.getComponent(SpriteRenderer.class) != null) {
+                SpriteRenderer spr = g.getComponent(SpriteRenderer.class);
+                if(spr.getTexture()!= null) {
+                    spr.setTexture(AssetPool.getTexture(spr.getTexture().getFilepath()));
+                }
+            }
+        }
     }
-    float t = 0.0f;
     @Override
     public void update(float dt) {
         levelEditorStuff.update(dt);
-        DebugDraw.addBox2D(new Vector2f(400,200), new Vector2f(64,32), 30,new Vector3f(0,1,0),1);
 
         for (GameObject go : this.gameObjects) {
             go.update(dt);
@@ -82,6 +90,7 @@ public class LevelEditorScene extends Scene {
     }
     @Override
     public void imgui() {
+
         ImGui.begin("Test window");
 
         ImVec2 windowPos = new ImVec2();
@@ -91,7 +100,7 @@ public class LevelEditorScene extends Scene {
         ImVec2 itemSpacing = new ImVec2();
         ImGui.getStyle().getItemSpacing(itemSpacing);
 
-        float windowX2 = windowPos.x + windowPos.x;
+        float windowX2 = windowPos.x + windowSize.x;
         for(int i =0; i< sprites.size(); i++) {
             Sprite sprite = sprites.getSprite(i);
             float spriteWidth = sprite.getWidth() * 4;

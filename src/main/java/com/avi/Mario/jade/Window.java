@@ -1,9 +1,9 @@
 package com.avi.Mario.jade;
 
 import com.avi.Mario.renderer.DebugDraw;
+import com.avi.Mario.renderer.Framebuffer;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import scenes.LevelEditorScene;
 import scenes.LevelScene;
@@ -11,13 +11,14 @@ import scenes.Scene;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
     private int width, height;
     private String title;
     private long glfwWindow;
     private ImGuiLayer imGuiLayer;
+    private Framebuffer framebuffer;
+
     public float r;
     public float g;
     public float b;
@@ -43,6 +44,7 @@ public class Window {
                 break;
             case 1:
                 currentScene= new LevelScene();
+                break;
             default:
                 assert false: "Unknown scene '" + newScene + "'";
                 break;
@@ -77,16 +79,11 @@ public class Window {
         glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-
-        //create window
-        glfwWindow = glfwCreateWindow(this.width, this.height,this.title, NULL,NULL);
-        if(glfwWindow == NULL) {
-            throw new IllegalStateException("Failed to create GLFW window");
+        glfwWindow = glfwCreateWindow(width, height, title, 0, 0);
+        if (glfwWindow == 0) {
+            throw new RuntimeException("Failed to create the GLFW window");
         }
-        GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowPos(glfwWindow,
-                (vidMode.width() - this.width) / 2,
-                (vidMode.height() - this.height) / 2);
+
 
         glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
         glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
@@ -107,9 +104,12 @@ public class Window {
         GL.createCapabilities();
 
         glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         this.imGuiLayer = new ImGuiLayer(glfwWindow);
         this.imGuiLayer.initImGui();
+
+        this.framebuffer = new Framebuffer(1920, 1080);
+        glViewport(0,0,1920,1080);
 
         Window.changeScene(0);
     }
@@ -123,15 +123,17 @@ public class Window {
 
             DebugDraw.beginFrame();
 
-
-            glClearColor(r, g,b,a);
+            this.framebuffer.bind();
+            glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if(dt>=0) {
                 DebugDraw.draw();
                 currentScene.update(dt);
             }
-            this.imGuiLayer.update(dt, currentScene);;
+            this.framebuffer.unbind();
+
+            this.imGuiLayer.update(dt, currentScene);
             glfwSwapBuffers(glfwWindow);
 
             float endTime = (float)glfwGetTime();
@@ -151,5 +153,12 @@ public class Window {
     }
     public static void setHeight(int newHeight) {
         get().height = newHeight;
+    }
+    public static Framebuffer getFramebuffer() {
+        return get().framebuffer;
+    }
+
+    public static float getTargetAspectRatio() {
+        return 16.0f / 9.0f;
     }
 }
