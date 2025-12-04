@@ -1,6 +1,8 @@
 package com.avi.Mario.jade;
 
 import com.avi.Mario.editor.GameViewWindow;
+import com.avi.Mario.editor.PropertiesWindow;
+import com.avi.Mario.renderer.PickingTexture;
 import imgui.*;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
@@ -13,14 +15,23 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class ImGuiLayer {
     private long glfwWindow;
-    public ImGuiLayer(long glfwWindow) {
-        this.glfwWindow = glfwWindow;
-    }
 
     private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
 
     // LWJGL3 renderer (SHOULD be initialized)
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+
+    private GameViewWindow gameViewWindow;
+    private PropertiesWindow propertiesWindow;
+
+
+    public ImGuiLayer(long glfwWindow, PickingTexture pickingTexture) {
+
+        this.glfwWindow = glfwWindow;
+        this.gameViewWindow = new GameViewWindow();
+        this.propertiesWindow = new PropertiesWindow(pickingTexture);
+    }
+
     public void initImGui() {
         // IMPORTANT!!
         // This line is critical for Dear ImGui to work.
@@ -116,7 +127,7 @@ public class ImGuiLayer {
                 ImGui.setWindowFocus(null);
             }
 
-            if(!io.getWantCaptureMouse()) {
+            if(!io.getWantCaptureMouse() || gameViewWindow.getWantCaptureMouse()) {
                 MouseListener.mouseButtonCallback(w,button,action,mods);
             }
         });
@@ -124,6 +135,7 @@ public class ImGuiLayer {
         glfwSetScrollCallback(glfwWindow, (w, xOffset, yOffset) -> {
             io.setMouseWheelH(io.getMouseWheelH() + (float) xOffset);
             io.setMouseWheel(io.getMouseWheel() + (float) yOffset);
+            MouseListener.mouseScrollCallback(w,xOffset,yOffset);
         });
 
         io.setSetClipboardTextFn(new ImStrConsumer() {
@@ -137,7 +149,7 @@ public class ImGuiLayer {
             @Override
             public String get() {
                 final String clipboardString = glfwGetClipboardString(glfwWindow);
-                if (clipboardString != null) {
+                if(clipboardString != null) {
                     return clipboardString;
                 } else {
                     return "";
@@ -175,9 +187,11 @@ public class ImGuiLayer {
         // Any Dear ImGui code SHOULD go between ImGui.newFrame()/ImGui.render() methods
         ImGui.newFrame();
         setupDockspace();
-        currentScene.sceneImgui();
+        currentScene.imgui();
         ImGui.showDemoWindow();
-        GameViewWindow.imgui();
+        gameViewWindow.imgui();
+        propertiesWindow.update(dt,currentScene);
+        propertiesWindow.imgui();
         ImGui.end();
         ImGui.render();
 
@@ -231,6 +245,9 @@ public class ImGuiLayer {
         //Dockspace
         ImGui.dockSpace(ImGui.getID("Dockspace"));
 
+    }
+    public PropertiesWindow getPropertiesWindow() {
+        return this.propertiesWindow;
     }
 
 }

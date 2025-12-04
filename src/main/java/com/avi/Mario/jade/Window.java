@@ -1,7 +1,7 @@
 package com.avi.Mario.jade;
 
-import com.avi.Mario.renderer.DebugDraw;
-import com.avi.Mario.renderer.Framebuffer;
+import com.avi.Mario.renderer.*;
+import com.avi.Mario.util.AssetPool;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -18,6 +18,7 @@ public class Window {
     private long glfwWindow;
     private ImGuiLayer imGuiLayer;
     private Framebuffer framebuffer;
+    private PickingTexture pickingTexture;
 
     public float r;
     public float g;
@@ -28,8 +29,8 @@ public class Window {
 
     private static Scene currentScene;
     private Window() {
-        this.width = 1920;
-        this.height = 1080;
+        this.width = width;
+        this.height = height;
         this.title = "Mario";
         r=1;
         g=1;
@@ -78,12 +79,13 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+
+        //create window
         glfwWindow = glfwCreateWindow(width, height, title, 0, 0);
         if (glfwWindow == 0) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-
 
         glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
         glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
@@ -104,22 +106,45 @@ public class Window {
         GL.createCapabilities();
 
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        this.imGuiLayer = new ImGuiLayer(glfwWindow);
-        this.imGuiLayer.initImGui();
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-        this.framebuffer = new Framebuffer(1920, 1080);
-        glViewport(0,0,1920,1080);
+        this.framebuffer = new Framebuffer(1920, 1200);
+        this.pickingTexture = new PickingTexture(1920,1200);
+        glViewport(0,0,1920,1200);
+
+        this.imGuiLayer = new ImGuiLayer(glfwWindow, pickingTexture);
+        this.imGuiLayer.initImGui();
 
         Window.changeScene(0);
     }
     public void loop() {
         float beginTime = (float)glfwGetTime();
+        float endTime;
         float dt = -1.0f;
 
+        Shader defaultShader = AssetPool.getShader("assets/shaders/defaultShader.glsl");
+        Shader pickingShader = AssetPool.getShader("assets/shaders/pickingShader.glsl");
 
         while(!glfwWindowShouldClose(glfwWindow)) {
+            // Poll events
             glfwPollEvents();
+
+            // Render pass 1. Render to picking texture
+            glDisable(GL_BLEND);
+            pickingTexture.enableWriting();
+
+            glViewport(0,0,1920,1200);
+            glClearColor(0.0f,0.0f,0.0f,0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            Renderer.bindShader(pickingShader);
+            currentScene.render();
+
+            pickingTexture.disableWriting();
+            glEnable(GL_BLEND);
+
+
+            // Render pass2. Render actual game
 
             DebugDraw.beginFrame();
 
@@ -130,13 +155,15 @@ public class Window {
             if(dt>=0) {
                 DebugDraw.draw();
                 currentScene.update(dt);
+                currentScene.render();
             }
             this.framebuffer.unbind();
 
             this.imGuiLayer.update(dt, currentScene);
             glfwSwapBuffers(glfwWindow);
+            MouseListener.endFrame();
 
-            float endTime = (float)glfwGetTime();
+            endTime = (float)glfwGetTime();
              dt= endTime-beginTime;
             beginTime = endTime;
         }
@@ -160,5 +187,8 @@ public class Window {
 
     public static float getTargetAspectRatio() {
         return 16.0f / 9.0f;
+    }
+    public static ImGuiLayer getImGuiLayer() {
+        return get().imGuiLayer;
     }
 }

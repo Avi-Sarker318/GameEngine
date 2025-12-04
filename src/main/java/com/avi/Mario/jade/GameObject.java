@@ -1,6 +1,7 @@
 package com.avi.Mario.jade;
 
 import components.Component;
+import imgui.ImGui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,12 +9,19 @@ import java.util.List;
 public class GameObject {
     private static int ID_COUNTER = 0;
     private int uid = -1;
+
+
     private String name;
     private List<Component> components;
     public Transform transform;
     private int zIndex;
+    private boolean doSerialization = true;
 
-
+    public GameObject(String name) {
+        this.name = name;
+        this.components = new ArrayList<>();
+        this.uid =ID_COUNTER++;
+    }
     public GameObject(String name, Transform transform, int zIndex) {
         this.name = name;
         this.zIndex = zIndex;
@@ -21,6 +29,7 @@ public class GameObject {
         this.transform = transform;
         this.uid = ID_COUNTER++;
     }
+
     public <T extends Component> T getComponent(Class<T> componentClass) {
         for(Component c: components) {
             if(componentClass.isAssignableFrom(c.getClass())) {
@@ -63,7 +72,8 @@ public class GameObject {
 
     public void imgui() {
         for(Component c: components) {
-            c.imgui();
+            if (ImGui.collapsingHeader(c.getClass().getSimpleName()))
+                c.imgui();
         }
     }
 
@@ -80,5 +90,11 @@ public class GameObject {
 
     public List<Component> getAllComponents() {
         return this.components;
+    }
+    public void setNoSerialize() {
+        this.doSerialization = false;
+    }
+    public boolean doSerialization() {
+        return this.doSerialization;
     }
 }

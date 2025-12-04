@@ -8,7 +8,8 @@ import imgui.flag.ImGuiWindowFlags;
 import org.joml.Vector2f;
 
 public class GameViewWindow {
-    public static void imgui() {
+    private float leftX, rightX, topY, bottomY;
+    public void imgui() {
         ImGui.begin("Game Viewport", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
         ImVec2 windowSize = getLargestSizeForViewport();
@@ -21,6 +22,11 @@ public class GameViewWindow {
         topLeft.x -= ImGui.getScrollX();
         topLeft.y -= ImGui.getScrollY();
 
+        leftX = topLeft.x;
+        bottomY = topLeft.y;
+        rightX = topLeft.x + windowSize.x;
+        topY = topLeft.y + windowSize.y;
+
         int textureId = Window.getFramebuffer().getTextureId();
         ImGui.image(textureId, windowSize.x, windowSize.y, 0, 1,1,0);
 
@@ -29,7 +35,7 @@ public class GameViewWindow {
 
         ImGui.end();
     }
-    private static ImVec2 getLargestSizeForViewport() {
+    private ImVec2 getLargestSizeForViewport() {
         ImVec2 windowSize = new ImVec2();
         ImGui.getContentRegionAvail(windowSize);
         windowSize.x -= ImGui.getScrollX();
@@ -43,7 +49,11 @@ public class GameViewWindow {
         }
         return new ImVec2(aspectWidth, aspectHeight);
     }
-    private static ImVec2 getCenteredPositionForViewport(ImVec2 aspectSize) {
+    public boolean getWantCaptureMouse() {
+        return MouseListener.getX() >= leftX && MouseListener.getX() <= rightX &&
+                MouseListener.getY() >= bottomY && MouseListener.getY() <= topY;
+    }
+    private ImVec2 getCenteredPositionForViewport(ImVec2 aspectSize) {
         ImVec2 windowSize = new ImVec2();
         ImGui.getContentRegionAvail(windowSize);
         windowSize.x -= ImGui.getScrollX();

@@ -1,17 +1,11 @@
 package scenes;
 
-import com.avi.Mario.jade.Camera;
-import com.avi.Mario.jade.GameObject;
-import com.avi.Mario.jade.Prefabs;
-import com.avi.Mario.jade.Transform;
-import com.avi.Mario.renderer.DebugDraw;
+import com.avi.Mario.jade.*;
 import com.avi.Mario.util.AssetPool;
 import components.*;
 import imgui.ImGui;
 import imgui.ImVec2;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class LevelEditorScene extends Scene {
     private GameObject obj1;
@@ -24,17 +18,21 @@ public class LevelEditorScene extends Scene {
     }
     @Override
     public void init() {
+        loadResources();
+        sprites = AssetPool.getSpriteSheet("assets/images/decorationsAndBlocks.png");
+        Spritesheet gizmos = AssetPool.getSpriteSheet("assets/images/gizmos.png");
+
+        this.camera = new Camera(new Vector2f(-250,0));
         levelEditorStuff.addComponent(new MouseControls());
         levelEditorStuff.addComponent(new GridLines());
-        loadResources();
-        this.camera = new Camera(new Vector2f());
-        sprites = AssetPool.getSpriteSheet("assets/images/decorationsAndBlocks.png");
-        if(levelLoaded) {
-            if(gameObjects.size() > 0) {
-                this.activeGameObject = gameObjects.getFirst();
-            }
-            return;
-        }
+        levelEditorStuff.addComponent(new EditorCamera(this.camera));
+        levelEditorStuff.addComponent(new TranslateGizmo(gizmos.getSprite(1),
+                Window.getImGuiLayer().getPropertiesWindow()));
+        levelEditorStuff.addComponent(new ScaleGizmo(gizmos.getSprite(2),
+                Window.getImGuiLayer().getPropertiesWindow()));
+
+        levelEditorStuff.start();
+
 
 
 
@@ -57,7 +55,6 @@ public class LevelEditorScene extends Scene {
         obj2.addComponent(obj2SpriteRenderer);
         this.addGameObjecttoScene(obj2);*/
 
-        DebugDraw.addLine2D(new Vector2f(0,0),new Vector2f(800,800), new Vector3f(1,0,0), 120);
 
     }
 
@@ -68,6 +65,8 @@ public class LevelEditorScene extends Scene {
         AssetPool.addSpritesheet("assets/images/decorationsAndBlocks.png",
                 new Spritesheet(AssetPool.getTexture("assets/images/decorationsAndBlocks.png"),
                         16,16,81,0));
+        AssetPool.addSpritesheet("assets/images/gizmos.png", new Spritesheet(AssetPool.getTexture("assets/images/gizmos.png"),
+                24,48,3,0));
         AssetPool.getTexture("assets/images/blendImage2.png");
 
         for(GameObject g: gameObjects) {
@@ -82,14 +81,22 @@ public class LevelEditorScene extends Scene {
     @Override
     public void update(float dt) {
         levelEditorStuff.update(dt);
+        this.camera.adjustProjection();
 
         for (GameObject go : this.gameObjects) {
             go.update(dt);
         }
+
+    }
+    @Override
+    public void render() {
         this.renderer.render();
     }
     @Override
     public void imgui() {
+        ImGui.begin("Level Editor Stuff");
+        levelEditorStuff.imgui();
+        ImGui.end();
 
         ImGui.begin("Test window");
 
@@ -102,6 +109,7 @@ public class LevelEditorScene extends Scene {
 
         float windowX2 = windowPos.x + windowSize.x;
         for(int i =0; i< sprites.size(); i++) {
+
             Sprite sprite = sprites.getSprite(i);
             float spriteWidth = sprite.getWidth() * 4;
             float spriteHeight = sprite.getHeight() * 4;
@@ -127,7 +135,6 @@ public class LevelEditorScene extends Scene {
         }
         ImGui.end();
     }
-
 
 }
 

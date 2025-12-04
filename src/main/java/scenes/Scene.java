@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import components.Component;
 import components.ComponentDeserializer;
-import imgui.ImGui;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class Scene {
 
@@ -23,7 +23,6 @@ public abstract class Scene {
     protected Camera camera;
     private boolean isRunning = false;
     protected List<GameObject> gameObjects = new ArrayList<>();
-    protected GameObject activeGameObject = null;
     protected boolean levelLoaded = false;
 
     public Scene() {
@@ -49,22 +48,21 @@ public abstract class Scene {
             this.renderer.add(go);
         }
     }
+    public GameObject getGameObject(int gameObjectId) {
+        Optional<GameObject> result = this.gameObjects.stream()
+                .filter(gameObject -> gameObject.getUid() == gameObjectId )
+                .findFirst();
+        return result.orElse(null);
+
+    }
 
     public abstract void update(float dt);
+
+    public abstract void render();
     public Camera camera() {
         return this.camera;
     }
 
-    public void sceneImgui() {
-        if(activeGameObject != null) {
-            ImGui.begin("Inspector");
-            activeGameObject.imgui();
-            ImGui.end();
-        }
-
-        imgui();
-
-    }
     public void imgui() {
 
     }
@@ -77,6 +75,12 @@ public abstract class Scene {
                 .create();
         try {
             FileWriter writer = new FileWriter("level.txt");
+            List<GameObject> objsToSerialize = new ArrayList<>();
+            for(GameObject obj : this.gameObjects) {
+                if(obj.doSerialization()) {
+                    objsToSerialize.add(obj);
+                }
+            }
             writer.write(gson.toJson(this.gameObjects));
             writer.close();
         } catch(IOException e) {

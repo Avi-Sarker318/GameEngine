@@ -2,6 +2,7 @@ package components;
 
 import com.avi.Mario.jade.GameObject;
 import imgui.ImGui;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -60,8 +61,14 @@ public abstract class Component {
                         field.set(this, !val);
 
                     }
-                }
-                else if(type == Vector3f.class) {
+                } else if (type == Vector2f.class) {
+                    Vector2f val = (Vector2f)value;
+                    float[] imVec = {val.x,val.y};
+                    if(ImGui.dragFloat2(name + ": ", imVec)) {
+                        val.set(imVec[0],imVec[1]);
+                    }
+
+                } else if(type == Vector3f.class) {
                     Vector3f val = (Vector3f)value;
                     float[] imVec = {val.x,val.y,val.z};
                     if(ImGui.dragFloat3(name + ": ", imVec)) {
